@@ -10,7 +10,7 @@ This is a work in progress. The architecture will likely change over time. For n
 
 ## Background
 
-Please refer to the [blog post](https://jaypjohnson.com/2022-09-19-designing-a-high-performance-rust-threadpool-for-kafka-with-mtls.html#requirements) for more information on this repo.
+Please refer to the [blog post](https://jaypjohnson.com/2022-09-19-designing-a-high-performance-rust-threadpool-for-kafka-with-mtls.html) for more information on this repo.
 
 ## Configuration
 
