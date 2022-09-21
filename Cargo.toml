@@ -1,0 +1,40 @@
+[package]
+name = "kafka-threadpool"
+description = "An async rust threadpool for publishing messages to kafka using SSL (mTLS) or PLAINTEXT protocols."
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+authors = [
+    "Jay Johnson <jayphjohnson@gmail.com>"
+]
+homepage = "https://docs.rs/kafka-threadpool/latest/kafka-threadpool/"
+documentation = "https://docs.rs/kafka-threadpool"
+repository = "https://github.com/jay-johnson/rust-kafka-threadpool"
+
+categories = [
+]
+keywords = [
+]
+exclude = [
+    "docker/*",
+    "env/*",
+    "images/*",
+    "notes/*",
+    "target/*",
+]
+
+[dependencies]
+log = { version = "^0.4.16" }
+pretty_env_logger = { version = "^0.4.0" }
+rdkafka = { version = "^0.28", features = ["cmake-build", "ssl", "ssl-vendored"] }
+tokio = { version = "^1.21", features = [ "rt-multi-thread", "macros" ] }
+
+[lib]
+name = "kafka_threadpool"
+path = "src/lib.rs"
+
+# https://doc.rust-lang.org/cargo/reference/profiles.html
+[profile.release]
+strip = "debuginfo"
+lto = "fat"
+codegen-units = 1
