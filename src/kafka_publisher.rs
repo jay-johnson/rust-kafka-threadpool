@@ -12,6 +12,7 @@
 //! my_kafka_publisher.shutdown().await.unwrap();
 //! ```
 //!
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -64,6 +65,55 @@ impl KafkaPublisher {
                     .unwrap_or_else(|_| "ktp".to_string()),
             ),
             publish_msgs: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// add_data_msg
+    ///
+    /// Build a publishable data message from function
+    /// arguments and add it to the
+    /// lockable publish vector. Client libraries that
+    /// want to just send a single
+    /// message without worrying about the
+    /// ``KafkaPublishMessageType`` should use this function.
+    ///
+    /// # Arguments
+    ///
+    /// * `topic` - kafka topic to publish the message into
+    /// * `key` - kafka partition key
+    /// * `headers` - optional - headers for the kafka message
+    /// * `payload` - data within the kafka messag
+    ///
+    /// Uses the utility API method:
+    /// [`add_messages_to_locked_work_vec`](crate::api::add_messages_to_locked_work_vec)
+    ///
+    /// # Returns
+    ///
+    /// ``Result<usize, String>``
+    /// where
+    /// - ``usize`` = updated number of messages in ``self.publish_msgs``
+    /// after adding the new ``msg``
+    /// - ``String`` = error reason
+    ///
+    pub async fn add_data_msg(
+        &self,
+        topic: &str,
+        key: &str,
+        headers: Option<HashMap<String, String>>,
+        payload: &str,
+    ) -> Result<usize, String> {
+        if self.config.is_enabled {
+            let msg = build_kafka_publish_message(
+                KafkaPublishMessageType::Data,
+                topic,
+                key,
+                headers,
+                payload,
+            );
+            let pub_vec: Vec<KafkaPublishMessage> = vec![msg];
+            add_messages_to_locked_work_vec(&self.publish_msgs, pub_vec)
+        } else {
+            Ok(0)
         }
     }
 

@@ -17,7 +17,7 @@ use crate::api::kafka_publish_message_type::KafkaPublishMessageType;
 /// * `msg_type` - request type of message [`KafkaPublishMessageType`]
 /// * `topic` - kafka topic to publish the message into
 /// * `key` - kafka partition key
-/// * `headers` - headers for the kafka message
+/// * `headers` - optional - headers for the kafka message
 /// * `payload` - data within the kafka message
 ///
 /// # Examples
