@@ -68,6 +68,22 @@ impl KafkaPublisher {
         }
     }
 
+    /// is_enabled
+    ///
+    /// Clients wanting to test if the threadpool is
+    /// enabled can use this helper method.
+    ///
+    /// # Returns
+    ///
+    /// - ``true`` when the environment variable: ``KAFKA_ENABLED``
+    ///   is set to ``true`` or ``1``
+    /// - ``false`` when the environment variable: ``KAFKA_ENABLED``
+    ///   is set to anything but ``true`` or ``1``
+    ///
+    pub fn is_enabled(&self) -> bool {
+        self.config.is_enabled
+    }
+
     /// add_data_msg
     ///
     /// Build a publishable data message from function
