@@ -1,4 +1,5 @@
-//! start the threadpool with a logging label
+//! Start the threadpool and return a
+//! [`KafkaPublisher`](crate::kafka_publisher::KafkaPublisher)
 //!
 use log::info;
 use log::trace;

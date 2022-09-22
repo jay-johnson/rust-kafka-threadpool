@@ -4,12 +4,13 @@
 //! [`KafkaPublisher`](crate::kafka_publisher) is how
 //! callers interface with the ``kafka_threadpool``'s
 //! ``lockable work Vec`` called ``publish_msgs``
-//! and can gracefully shutdown the threadpool using:
+//! and can gracefully shutdown the threadpool
+//!
+//! Example for shutting down the threadpool:
 //!
 //! ```rust
-//! my_threadpool.shutdown().unwrap();
+//! my_kafka_publisher.shutdown().await.unwrap();
 //! ```
-//!
 //!
 use std::sync::Arc;
 use std::sync::Mutex;
