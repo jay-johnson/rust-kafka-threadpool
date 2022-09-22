@@ -4,7 +4,7 @@
 //! [`KafkaPublisher`](crate::kafka_publisher) is how
 //! callers interface with the ``kafka_threadpool``'s
 //! ``lockable work Vec`` called ``publish_msgs``
-//! and can gracefully shutdown the threadpool
+//! and can gracefully shutdown the threadpool.
 //!
 //! Example for shutting down the threadpool:
 //!
@@ -78,7 +78,7 @@ impl KafkaPublisher {
     /// to add to the lockable work vector: ``self.publish_msgs``
     ///
     /// Uses the utility API method:
-    /// [`add_messages_to_locked_work_vec`](kafka_threadpool::api::add_messages_to_locked_work_vec)
+    /// [`add_messages_to_locked_work_vec`](crate::api::add_messages_to_locked_work_vec)
     ///
     /// # Returns
     ///
@@ -107,7 +107,7 @@ impl KafkaPublisher {
     /// to add to the lockable work vector: ``self.publish_msgs``
     ///
     /// Uses the utility API method:
-    /// [`add_messages_to_locked_work_vec`](kafka_threadpool::api::add_messages_to_locked_work_vec)
+    /// [`add_messages_to_locked_work_vec`](crate::api::add_messages_to_locked_work_vec)
     ///
     /// # Returns
     ///
