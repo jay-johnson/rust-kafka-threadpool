@@ -1,9 +1,6 @@
 //! Static configuration for the threadpool where
 //! the values are read from environment variables
-//! at startup
-//!
-//! # Supported Environment Variables
-//!
+//! at startup with supported environment variables:
 //! | Environment Variable Name        | Purpose / Value                                |
 //! | -------------------------------- | ---------------------------------------------- |
 //! | KAFKA_ENABLED                    | toggle the kafka_threadpool on with: ``true`` or ``1`` anything else disables the threadpool |
@@ -21,6 +18,7 @@
 use std::collections::HashMap;
 
 use log::info;
+use log::trace;
 
 /// KafkaClientConfig
 ///
@@ -52,7 +50,7 @@ impl KafkaClientConfig {
         }
 
         if !is_enabled {
-            info!("kafka disabled KAFKA_ENABLED={is_enabled_s}");
+            trace!("kafka disabled KAFKA_ENABLED={is_enabled}");
             return KafkaClientConfig {
                 label: label.to_string(),
                 is_enabled,

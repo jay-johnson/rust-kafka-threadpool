@@ -46,6 +46,15 @@ async fn main() {
     let test_case = "start_threadpool";
     let kafka_publisher = start_threadpool(Some(test_case)).await;
 
+    if !kafka_publisher.config.is_enabled {
+        info!(
+            "kafka threadpool disabled - \
+            please check the environment variable KAFKA_ENABLED \
+            is set to '1' or 'true' and retry"
+        );
+        return;
+    }
+
     info!(
         "{test_case} \
         config={}",

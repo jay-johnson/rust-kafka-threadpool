@@ -32,22 +32,31 @@ pub async fn start_threadpool(label: Option<&str>) -> KafkaPublisher {
         None => &ll,
     };
     let config = build_kafka_client_config(use_label);
-    trace!("start_threadpool - starting threads");
-    match start_threads_from_config(config).await {
-        Ok(kafka_publisher) => {
-            info!(
-                "{use_label} - started {} kafka publish threads",
-                kafka_publisher.config.num_threads
-            );
-            kafka_publisher
+    if config.is_enabled {
+        trace!("start_threadpool - starting threads");
+        match start_threads_from_config(config).await {
+            Ok(kafka_publisher) => {
+                info!(
+                    "{use_label} - started {} kafka publish threads",
+                    kafka_publisher.config.num_threads
+                );
+                kafka_publisher
+            }
+            Err(e) => {
+                // rebuild the config after using (move-ing) it
+                let err_config = build_kafka_client_config(use_label);
+                panic!(
+                    "{use_label} \
+                    failed to kafka publish threads with start_threads_from_config \
+                    config={} err={e} - stopping",
+                    err_config);
+            }
         }
-        Err(e) => {
-            // rebuild the config after using (move-ing) it
-            let err_config = build_kafka_client_config(use_label);
-            panic!(
-                "{use_label} failed to kafka publish threads with start_threads_from_config \
-                config={} err={e} - stopping",
-                err_config);
-        }
+    } else {
+        info!(
+            "kafka threadpool disabled KAFKA_ENABLED={}",
+            config.is_enabled
+        );
+        KafkaPublisher::new()
     }
 }

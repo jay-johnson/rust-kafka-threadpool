@@ -32,6 +32,10 @@ use crate::thread_process_messages_handler::thread_process_messages_handler;
 pub async fn start_threads_from_config(
     config: KafkaClientConfig,
 ) -> Result<KafkaPublisher, String> {
+    if !config.is_enabled {
+        info!("{} - kafka-threadpool disabled", config.label);
+        return Ok(KafkaPublisher::new());
+    }
     info!("{} - starting threads={}", config.label, config.num_threads);
     let new_publisher = KafkaPublisher {
         config: config.clone(),
