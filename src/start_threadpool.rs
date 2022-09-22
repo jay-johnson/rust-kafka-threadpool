@@ -19,7 +19,7 @@ use crate::pool::start_threads_from_config::start_threads_from_config;
 /// ```rust
 /// use kafka_threadpool::start_threadpool::start_threadpool;
 /// let log_label = "ktp";
-/// let kafka_publisher = start_threadpool(log_label);
+/// let kafka_publisher = start_threadpool(log_label).await;
 /// ```
 ///
 pub async fn start_threadpool(label: Option<&str>) -> KafkaPublisher {
