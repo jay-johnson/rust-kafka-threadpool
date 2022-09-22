@@ -145,7 +145,7 @@ impl KafkaClientConfig {
 
         info!(
             "build_kafka_client_config - label={label} \
-            enabled={is_enabled}
+            enabled={is_enabled} \
             tls key={tls_key} cert={tls_cert} ca={tls_ca} \
             retry_sleep={retry_sleep_sec} \
             threads={num_threads} \
