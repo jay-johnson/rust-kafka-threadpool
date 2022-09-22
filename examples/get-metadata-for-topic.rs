@@ -13,7 +13,7 @@ use kafka_threadpool::start_threadpool::start_threadpool;
 
 /// main
 ///
-/// Get metadata for single topic stored in the environment variable:
+/// Get metadata for a single topic stored in the environment variable:
 /// ``KAFKA_TOPIC``. If there is no ``KAFKA_TOPIC`` set, the process will exit.
 ///
 #[tokio::main]
