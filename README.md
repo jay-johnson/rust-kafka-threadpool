@@ -59,7 +59,7 @@ source ./env/kafka.env
 
 ### Start the Kafka Threadpool and Publish 100 Messages
 
-The included [./examples/start-threadpool.rs](./examples/start-threadpool.rs) example will connect to the kafka cluster based off the environment configuration and publish 100 messages into the kafka ``testing`` topic.
+The included [./examples/start-threadpool.rs](https://github.com/jay-johnson/rust-kafka-threadpool/blob/main/examples/start-threadpool.rs) example will connect to the kafka cluster based off the environment configuration and publish 100 messages into the kafka ``testing`` topic.
 
 ```bash
 cargo build --example start-threadpool
@@ -82,6 +82,8 @@ export RUST_LOG=info,rdkafka=info
 
 ### Get Kafka Cluster Metadata for All Topics, Partitions, ISR, and Offsets
 
+Run the [./examples/get-all-metadata.rs](https://github.com/jay-johnson/rust-kafka-threadpool/blob/main/examples/get-all-metadata.rs) example:
+
 ```bash
 cargo build --example get-all-metadata
 export RUST_BACKTRACE=1
@@ -97,7 +99,7 @@ export RUST_LOG=info,kafka_threadpool=info,rdkafka=info
     export KAFKA_TOPIC=testing
     ```
 
-1.  Run the ``get-metadata-for-topic`` example
+1.  Run the [./examples/get-metadata-for-topic.rs](https://github.com/jay-johnson/rust-kafka-threadpool/blob/main/examples/get-metadata-for-topic.rs) example:
 
     ```bash
     cargo build --example get-metadata-for-topic
