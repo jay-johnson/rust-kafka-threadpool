@@ -1,8 +1,7 @@
 //! Clients using ``kafka_threadpool`` get a
-//! [`KafkaPublisher`](crate::kafka_publisher) object with calling
-//! [`start_threadpool`](crate::start_threadpool).
-//!
-//! The [`KafkaPublisher`](crate::kafka_publisher) is how
+//! [`KafkaPublisher`](crate::kafka_publisher) object when calling
+//! [`start_threadpool()`](crate::start_threadpool). The
+//! [`KafkaPublisher`](crate::kafka_publisher) is how
 //! callers interface with the ``kafka_threadpool``'s
 //! ``lockable work Vec`` called ``publish_msgs``
 //! and can gracefully shutdown the threadpool using:
