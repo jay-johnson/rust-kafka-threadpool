@@ -92,8 +92,12 @@ impl KafkaPublisher {
         &self,
         msg: KafkaPublishMessage,
     ) -> Result<usize, String> {
-        let pub_vec: Vec<KafkaPublishMessage> = vec![msg];
-        add_messages_to_locked_work_vec(&self.publish_msgs, pub_vec)
+        if self.config.is_enabled {
+            let pub_vec: Vec<KafkaPublishMessage> = vec![msg];
+            add_messages_to_locked_work_vec(&self.publish_msgs, pub_vec)
+        } else {
+            Ok(0)
+        }
     }
 
     /// add_msgs
@@ -121,7 +125,11 @@ impl KafkaPublisher {
         &self,
         msgs: Vec<KafkaPublishMessage>,
     ) -> Result<usize, String> {
-        add_messages_to_locked_work_vec(&self.publish_msgs, msgs)
+        if self.config.is_enabled {
+            add_messages_to_locked_work_vec(&self.publish_msgs, msgs)
+        } else {
+            Ok(0)
+        }
     }
 
     /// drain_msgs
@@ -134,7 +142,11 @@ impl KafkaPublisher {
     /// ``Vec<KafkaPublishMessage>`` containing all drained messages
     ///
     pub async fn drain_msgs(&self) -> Vec<KafkaPublishMessage> {
-        drain_messages_from_locked_work_vec(&self.publish_msgs)
+        if self.config.is_enabled {
+            drain_messages_from_locked_work_vec(&self.publish_msgs)
+        } else {
+            vec![]
+        }
     }
 
     /// shutdown
@@ -154,21 +166,25 @@ impl KafkaPublisher {
     /// ```
     ///
     pub async fn shutdown(&self) -> Result<String, String> {
-        let shutdown_msg_vec: Vec<KafkaPublishMessage> =
-            vec![build_kafka_publish_message(
-                KafkaPublishMessageType::Shutdown,
-                "",
-                "",
-                None,
-                "",
-            )];
-        info!("sending shutdown msg");
-        match add_messages_to_locked_work_vec(
-            &self.publish_msgs,
-            shutdown_msg_vec,
-        ) {
-            Ok(_) => Ok("shutdown started".to_string()),
-            Err(e) => Err(e),
+        if self.config.is_enabled {
+            let shutdown_msg_vec: Vec<KafkaPublishMessage> =
+                vec![build_kafka_publish_message(
+                    KafkaPublishMessageType::Shutdown,
+                    "",
+                    "",
+                    None,
+                    "",
+                )];
+            info!("sending shutdown msg");
+            match add_messages_to_locked_work_vec(
+                &self.publish_msgs,
+                shutdown_msg_vec,
+            ) {
+                Ok(_) => Ok("shutdown started".to_string()),
+                Err(e) => Err(e),
+            }
+        } else {
+            Ok("kafka not enabled".to_string())
         }
     }
 
@@ -185,8 +201,12 @@ impl KafkaPublisher {
     /// get details for all topics
     ///
     pub async fn get_metadata(&self, fetch_offsets: bool, topic: Option<&str>) {
-        info!("creating consumer");
-        let consumer = get_kafka_consumer(&self.config);
-        get_kafka_metadata(&self.config, consumer, fetch_offsets, topic)
+        if self.config.is_enabled {
+            info!("creating consumer");
+            let consumer = get_kafka_consumer(&self.config);
+            get_kafka_metadata(&self.config, consumer, fetch_offsets, topic)
+        } else {
+            info!("kafka not enabled KAFKA_ENABLED={}", self.config.is_enabled);
+        }
     }
 }
