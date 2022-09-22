@@ -1,13 +1,13 @@
 [package]
 name = "kafka-threadpool"
 description = "An async rust threadpool for publishing messages to kafka using SSL (mTLS) or PLAINTEXT protocols."
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 license = "MIT"
 authors = [
     "Jay Johnson <jayphjohnson@gmail.com>"
 ]
-homepage = "https://docs.rs/kafka-threadpool/latest/kafka-threadpool/"
+homepage = "https://docs.rs/kafka-threadpool/latest/kafka_threadpool/"
 documentation = "https://docs.rs/kafka-threadpool"
 repository = "https://github.com/jay-johnson/rust-kafka-threadpool"
 
