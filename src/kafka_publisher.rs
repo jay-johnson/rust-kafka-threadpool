@@ -98,7 +98,7 @@ impl KafkaPublisher {
     /// * `topic` - kafka topic to publish the message into
     /// * `key` - kafka partition key
     /// * `headers` - optional - headers for the kafka message
-    /// * `payload` - data within the kafka messag
+    /// * `payload` - data within the kafka message
     ///
     /// Uses the utility API method:
     /// [`add_messages_to_locked_work_vec`](crate::api::add_messages_to_locked_work_vec)
