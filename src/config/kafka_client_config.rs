@@ -42,7 +42,7 @@ pub struct KafkaClientConfig {
 impl KafkaClientConfig {
     pub fn new(label: &str) -> Self {
         let is_enabled_s = std::env::var("KAFKA_ENABLED")
-            .unwrap_or_else(|_| "true".to_string())
+            .unwrap_or_else(|_| "false".to_string())
             .to_lowercase();
         let mut is_enabled = true;
         if is_enabled_s != "true" && is_enabled_s != "1" {
