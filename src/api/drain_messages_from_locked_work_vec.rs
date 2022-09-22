@@ -14,7 +14,7 @@ use crate::api::kafka_publish_message::KafkaPublishMessage;
 ///
 /// # Returns
 ///
-/// All messages drained process from the ``local_access_to_work_vec`` returned in a:
+/// All messages are drained from the ``lockable_work_vec`` and returned in a:
 /// ``Vec<KafkaPublishMessage>``
 ///
 /// # Arguments
