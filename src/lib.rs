@@ -6,7 +6,7 @@
 //!
 //! This is a work in progress. The architecture will likely change over time. For now here's the latest reference architecture:
 //!
-//! ![kafka-threadpool Reference Architecture](https://github.com/jay-johnson/rust-kafka-threadpool/blob/main/images/kafka_threadpool_design_v1.png)
+//! ![kafka-threadpool Reference Architecture v1](https://raw.githubusercontent.com/jay-johnson/rust-kafka-threadpool/main/images/kafka_threadpool_design_v1.png)
 //!
 //! ## Background
 //!
@@ -28,6 +28,7 @@
 //! | KAFKA_TLS_CLIENT_KEY             | optional - path to the kafka mTLS key |
 //! | KAFKA_TLS_CLIENT_CERT            | optional - path to the kafka mTLS certificate |
 //! | KAFKA_TLS_CLIENT_CA              | optional - path to the kafka mTLS certificate authority (CA) |
+//! | KAFKA_METADATA_COUNT_MSG_OFFSETS | optional - set to anything but ``true`` to bypass counting the offsets |
 //!
 //! ## Getting Started
 //!
@@ -47,6 +48,7 @@
 //! export KAFKA_TLS_CLIENT_CA="PATH_TO_TLS_CA_FILE"
 //! export KAFKA_TLS_CLIENT_CERT="PATH_TO_TLS_CERT_FILE"
 //! export KAFKA_TLS_CLIENT_KEY="PATH_TO_TLS_KEY_FILE"
+//! export KAFKA_METADATA_COUNT_MESSAGES="true"
 //! ```
 //!
 //! #### Load the Environment
@@ -71,15 +73,43 @@
 //! To consume the newly-published test messages from the ``testing`` topic, you can use your own consumer or the [rust-with-strimzi-kafka-and-tls/examples/run-consumer.rs](https://github.com/jay-johnson/rust-with-strimzi-kafka-and-tls/blob/main/examples/run-consumer.rs) example:
 //!
 //! ```bash
+//! # from the rust-with-strimzi-kafka-and-tls directory:
 //! cargo build --example run-consumer
 //! export RUST_BACKTRACE=1
 //! export RUST_LOG=info,rdkafka=info
 //! ./target/debug/examples/run-consumer -g rust-consumer-testing -t testing
 //! ```
 //!
+//! ### Get Kafka Cluster Metadata for All Topics, Partitions, ISR, and Offsets
+//!
+//! ```bash
+//! cargo build --example get-all-metadata
+//! export RUST_BACKTRACE=1
+//! export RUST_LOG=info,kafka_threadpool=info,rdkafka=info
+//! ./target/debug/examples/get-all-metadata
+//! ```
+//!
+//! ### Get Kafka Cluster Metadata for a Single Topic including Partitions, ISR and Offsets
+//!
+//! 1.  Set the Topic Name as an Environment Variable
+//!
+//!     ```bash
+//!     export KAFKA_TOPIC=testing
+//!     ```
+//!
+//! 1.  Run the ``get-metadata-for-topic`` example
+//!
+//!     ```bash
+//!     cargo build --example get-metadata-for-topic
+//!     export RUST_BACKTRACE=1
+//!     export RUST_LOG=info,kafka_threadpool=info,rdkafka=info
+//!     ./target/debug/examples/get-metadata-for-topic
+//!     ```
+//!
 pub mod api;
 pub mod config;
 pub mod kafka_publisher;
+pub mod metadata;
 pub mod msg;
 pub mod pool;
 pub mod start_threadpool;

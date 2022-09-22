@@ -62,6 +62,11 @@ pub fn convert_hashmap_headers_to_ownedheaders(
 /// (of type: [`KafkaPublishMessageType`](crate::api::kafka_publish_message_type)) is set to
 /// ``Data`` or ``Sensitive``
 ///
+/// This uses the
+/// [`FutureProducer.send_result() function`][rdkafka::producer::future_producer::FutureProducer::send_result]
+/// method to publish the message and immediately return without
+/// waiting on the kafka queue.
+///
 /// # Arguments
 ///
 /// * `label` - calling thread's logging label
@@ -77,6 +82,7 @@ pub async fn publish_message(
     msg: &KafkaPublishMessage,
     owned_headers: &OwnedHeaders,
 ) -> i32 {
+    // https://docs.rs/rdkafka/latest/rdkafka/producer/future_producer/struct.FutureProducer.html#method.send_result
     let (delivery_status, _id) = producer
         .send_result(
             FutureRecord::to(&msg.topic)

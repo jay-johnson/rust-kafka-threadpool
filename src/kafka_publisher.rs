@@ -19,9 +19,12 @@ use log::info;
 
 use crate::api::add_messages_to_locked_work_vec::add_messages_to_locked_work_vec;
 use crate::api::build_kafka_publish_message::build_kafka_publish_message;
+use crate::api::drain_messages_from_locked_work_vec::drain_messages_from_locked_work_vec;
+use crate::api::get_kafka_consumer::get_kafka_consumer;
 use crate::api::kafka_publish_message::KafkaPublishMessage;
 use crate::api::kafka_publish_message_type::KafkaPublishMessageType;
 use crate::config::kafka_client_config::KafkaClientConfig;
+use crate::metadata::get_kafka_metadata::get_kafka_metadata;
 
 /// KafkaPublishMessage
 ///
@@ -34,13 +37,106 @@ use crate::config::kafka_client_config::KafkaClientConfig;
 /// [`KafkaPublishMessage`]
 /// messages to Kafka
 ///
-#[derive(Clone)]
+#[derive(Default, Clone)]
 pub struct KafkaPublisher {
     pub config: KafkaClientConfig,
     pub publish_msgs: Arc<Mutex<Vec<KafkaPublishMessage>>>,
 }
 
 impl KafkaPublisher {
+    /// new
+    ///
+    /// create a new singleton
+    /// [`KafkaPublisher`](crate::kafka_publisher::KafkaPublisher)
+    /// for interfacing with the backend kafka publish threadpool
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use crate::kafka_publisher::KafkaPublisher;
+    /// let kp = KafkaPublisher::new();
+    /// ```
+    ///
+    pub fn new() -> Self {
+        KafkaPublisher {
+            config: KafkaClientConfig::new(
+                &std::env::var("KAFKA_LOG_LABEL")
+                    .unwrap_or_else(|_| "ktp".to_string()),
+            ),
+            publish_msgs: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// add_msg
+    ///
+    /// Add a single message to the lockable publish vector
+    ///
+    /// # Arguments
+    ///
+    /// * `msg` - an initialized
+    /// [`KafkaPublishMessage`](crate::api::kafka_publish_message::KafkaPublishMessage)
+    /// to add to the lockable work vector: ``self.publish_msgs``
+    ///
+    /// Uses the utility API method:
+    /// [`add_messages_to_locked_work_vec`](kafka_threadpool::api::add_messages_to_locked_work_vec)
+    ///
+    /// # Returns
+    ///
+    /// ``Result<usize, String>``
+    /// where
+    /// - ``usize`` = updated number of messages in ``self.publish_msgs``
+    /// after adding the new ``msg``
+    /// - ``String`` = error reason
+    ///
+    pub async fn add_msg(
+        &self,
+        msg: KafkaPublishMessage,
+    ) -> Result<usize, String> {
+        let pub_vec: Vec<KafkaPublishMessage> = vec![msg];
+        add_messages_to_locked_work_vec(&self.publish_msgs, pub_vec)
+    }
+
+    /// add_msgs
+    ///
+    /// Add a vector of messages to the lockable publish vector
+    ///
+    /// # Arguments
+    ///
+    /// * `msgs` - vector of
+    /// [`KafkaPublishMessage`](crate::api::kafka_publish_message::KafkaPublishMessage)
+    /// to add to the lockable work vector: ``self.publish_msgs``
+    ///
+    /// Uses the utility API method:
+    /// [`add_messages_to_locked_work_vec`](kafka_threadpool::api::add_messages_to_locked_work_vec)
+    ///
+    /// # Returns
+    ///
+    /// ``Result<usize, String>``
+    /// where
+    /// - ``usize`` = updated number of messages in ``self.publish_msgs``
+    /// after adding the new ``msgs``
+    /// - ``String`` = error reason
+    ///
+    pub async fn add_msgs(
+        &self,
+        msgs: Vec<KafkaPublishMessage>,
+    ) -> Result<usize, String> {
+        add_messages_to_locked_work_vec(&self.publish_msgs, msgs)
+    }
+
+    /// drain_msgs
+    ///
+    /// Helper function for testing - allows draining
+    /// all data in the lockable work vec: ``self.publish_msgs``
+    ///
+    /// # Returns
+    ///
+    /// ``Vec<KafkaPublishMessage>`` containing all drained messages
+    ///
+    pub async fn drain_msgs(&self) -> Vec<KafkaPublishMessage> {
+        drain_messages_from_locked_work_vec(&self.publish_msgs)
+    }
+
     /// shutdown
     ///
     /// Gracefully shutdown the threadpool by
@@ -54,10 +150,10 @@ impl KafkaPublisher {
     /// # Examples
     ///
     /// ```rust
-    /// my_threadpool.shutdown().unwrap();
+    /// my_threadpool.shutdown().await.unwrap();
     /// ```
     ///
-    pub fn shutdown(&self) -> Result<String, String> {
+    pub async fn shutdown(&self) -> Result<String, String> {
         let shutdown_msg_vec: Vec<KafkaPublishMessage> =
             vec![build_kafka_publish_message(
                 KafkaPublishMessageType::Shutdown,
@@ -74,5 +170,23 @@ impl KafkaPublisher {
             Ok(_) => Ok("shutdown started".to_string()),
             Err(e) => Err(e),
         }
+    }
+
+    /// get_metadata
+    ///
+    /// Get kafka cluster information by all topics or for
+    /// just one topic
+    ///
+    /// # Arguments
+    ///
+    /// * `fetch_offsets` - when ``true`` this function will count the total number
+    /// of messages in each topic
+    /// * `topic` - If set, only get the details for that specific topic if set to ``None``
+    /// get details for all topics
+    ///
+    pub async fn get_metadata(&self, fetch_offsets: bool, topic: Option<&str>) {
+        info!("creating consumer");
+        let consumer = get_kafka_consumer(&self.config);
+        get_kafka_metadata(&self.config, consumer, fetch_offsets, topic)
     }
 }

@@ -35,9 +35,10 @@ use kafka_threadpool::start_threadpool::start_threadpool;
 /// | KAFKA_PUBLISH_RETRY_INTERVAL_SEC | number of seconds to sleep before each publish retry |
 /// | KAFKA_PUBLISH_IDLE_INTERVAL_SEC  | number of seconds to sleep if there are no message to process |
 /// | KAFKA_NUM_THREADS                | number of threads for the threadpool |
-/// | KAFKA_TLS_CLIENT_KEY             | path to the kafka mTLS key |
-/// | KAFKA_TLS_CLIENT_CERT            | path to the kafka mTLS certificate |
-/// | KAFKA_TLS_CLIENT_CA              | path to the kafka mTLS certificate authority (CA) |
+/// | KAFKA_TLS_CLIENT_KEY             | optional - path to the kafka mTLS key |
+/// | KAFKA_TLS_CLIENT_CERT            | optional - path to the kafka mTLS certificate |
+/// | KAFKA_TLS_CLIENT_CA              | optional - path to the kafka mTLS certificate authority (CA) |
+/// | KAFKA_METADATA_COUNT_MSG_OFFSETS | optional - set to anything but ``true`` to bypass counting the offsets |
 ///
 #[tokio::main]
 async fn main() {
@@ -48,7 +49,7 @@ async fn main() {
     info!(
         "{test_case} \
         config={}",
-        kafka_publisher.config.clone()
+        kafka_publisher.config
     );
 
     info!("creating messages");
@@ -61,7 +62,7 @@ async fn main() {
         new_msgs.push(build_kafka_publish_message(
             KafkaPublishMessageType::Data,
             "testing",
-            "no-key",
+            "testing",
             Some(headers),
             &payload,
         ));
@@ -92,10 +93,10 @@ async fn main() {
     }
 
     // waits until threads exit or are shutdown
-    info!("waiting 5s to send shutdown");
-    std::thread::sleep(std::time::Duration::from_millis(5000));
+    info!("waiting 3s to send shutdown");
+    std::thread::sleep(std::time::Duration::from_millis(3000));
     // send shutdown message to all worker threads in the pool
-    match kafka_publisher.shutdown() {
+    match kafka_publisher.shutdown().await {
         Ok(msg) => trace!("{msg}"),
         Err(err_msg) => {
             error!("publisher shutdown failed with err='{err_msg}'")

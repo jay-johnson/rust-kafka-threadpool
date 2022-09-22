@@ -1,4 +1,5 @@
-//! Handler that each tokio-spawned thread uses to process all messages
+//! Handler that each tokio-spawned thread uses to process all messages. This
+//! function is the thread context state machine.
 //!
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -11,10 +12,12 @@ use rdkafka::message::OwnedHeaders;
 
 use crate::api::add_messages_to_locked_work_vec::add_messages_to_locked_work_vec;
 use crate::api::drain_messages_from_locked_work_vec::drain_messages_from_locked_work_vec;
+use crate::api::get_kafka_consumer::get_kafka_consumer;
 use crate::api::get_kafka_producer::get_kafka_producer;
 use crate::api::kafka_publish_message::KafkaPublishMessage;
 use crate::api::kafka_publish_message_type::KafkaPublishMessageType;
 use crate::config::kafka_client_config::KafkaClientConfig;
+use crate::metadata::get_kafka_metadata::get_kafka_metadata;
 use crate::msg::publish_message::convert_hashmap_headers_to_ownedheaders;
 use crate::msg::publish_message::publish_message;
 
@@ -131,13 +134,13 @@ pub async fn thread_process_messages_handler(
                         let delivery_status =
                             publish_message(&producer, &msg, &owned_headers)
                                 .await;
-                        if delivery_status == 0 {
+                        if delivery_status != -1 {
                             trace!("published message topic={topic}");
                             break;
                         } else {
                             error!(
-                                "failed to publish \
-                                delivery status={} retrying msg={:?}",
+                                "failed to publish delivery status={} \
+                                retrying msg={:?}",
                                 delivery_status, msg
                             );
                             std::thread::sleep(
@@ -151,10 +154,46 @@ pub async fn thread_process_messages_handler(
                     == KafkaPublishMessageType::LogBrokerDetails
                 {
                     info!(
-                        "{log_label} not supported yet - get broker details \
-                        type={:?} - coming soon",
-                        msg.msg_type
+                        "{log_label} - get all broker config={} information",
+                        config
                     );
+                    {
+                        let consumer = get_kafka_consumer(&config);
+                        let count_msgs =
+                            std::env::var("KAFKA_METADATA_COUNT_MSG_OFFSETS")
+                                .unwrap_or_else(|_| "true".to_string())
+                                == *"true";
+                        get_kafka_metadata(&config, consumer, count_msgs, None);
+                    }
+                    break;
+                } else if msg.msg_type
+                    == KafkaPublishMessageType::LogBrokerTopicDetails
+                {
+                    if msg.payload.is_empty() {
+                        error!(
+                            "{log_label} - \
+                            unable to get broker config={} \
+                            missing topic={} in msg.payload",
+                            config, msg.payload
+                        );
+                    } else {
+                        info!(
+                            "{log_label} - \
+                            get broker config={} topic={} information",
+                            config, msg.payload
+                        );
+                        let consumer = get_kafka_consumer(&config);
+                        let count_msgs =
+                            std::env::var("KAFKA_METADATA_COUNT_MSG_OFFSETS")
+                                .unwrap_or_else(|_| "true".to_string())
+                                == *"true";
+                        get_kafka_metadata(
+                            &config,
+                            consumer,
+                            count_msgs,
+                            Some(&msg.payload),
+                        );
+                    }
                     break;
                 } else {
                     error!(
